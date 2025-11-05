@@ -1,55 +1,60 @@
 package org.example.Amazon;
 
-import org.example.Amazon.Cost.PriceRule;
 import org.example.Amazon.Cost.ItemType;
+import org.example.Amazon.Cost.PriceRule;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-class AmazonIntegrationTest {
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+public class AmazonIntegrationTest {
 
-    private Database db;
-    private ShoppingCartAdaptor cartAdaptor;
+    private static Database database;
+    private static ShoppingCartAdaptor shoppingCart;
+
+    @BeforeAll
+    static void setupAll() {
+        database = new Database();
+        shoppingCart = new ShoppingCartAdaptor(database);
+    }
 
     @BeforeEach
-    void setup() {
-        db = new Database();
-        db.resetDatabase();
-        cartAdaptor = new ShoppingCartAdaptor(db);
-    }
-
-    @AfterEach
-    void tearDown() {
-        db.close();
+    void resetDB() {
+        database.resetDatabase();
     }
 
     @Test
-    @DisplayName("specification-based: verify items are added and retrieved correctly from DB")
+    @DisplayName("specification-based - adding and retrieving items from database")
+    @Order(1)
     void testAddAndRetrieveItemsFromDatabase() {
-        Item item1 = new Item(ItemType.BOOK, "Novel", 2, 10.0);
-        cartAdaptor.add(item1);
+        Item book = new Item(ItemType.BOOK, "Java Basics", 2, 25.0);
+        shoppingCart.add(book);
 
-        List<Item> items = cartAdaptor.getItems();
-
-        assertEquals(1, items.size());
-        assertEquals("Novel", items.get(0).getName());
+        var items = shoppingCart.getItems();
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).getName()).isEqualTo("Java Basics");
     }
 
     @Test
-    @DisplayName("structural-based: verify calculate() sums up rule logic correctly")
+    @DisplayName("structural-based - calculate total using real components")
+    @Order(2)
     void testCalculateTotalWithRealComponents() {
-        Item item = new Item(ItemType.ELECTRONIC, "Headphones", 2, 30.0);
-        cartAdaptor.add(item);
-
         PriceRule rule = items -> items.stream()
-                .mapToDouble(i -> i.getPricePerUnit() * i.getQuantity())
+                .mapToDouble(i -> i.getQuantity() * i.getPricePerUnit())
                 .sum();
 
-        Amazon amazon = new Amazon(cartAdaptor, List.of(rule));
-        double result = amazon.calculate();
+        Amazon amazon = new Amazon(shoppingCart, List.of(rule));
+        amazon.addToCart(new Item(ItemType.BOOK, "Effective Java", 1, 45.0));
+        amazon.addToCart(new Item(ItemType.CLOTHING, "T-shirt", 2, 15.0));
 
-        assertEquals(60.0, result);
+        double total = amazon.calculate();
+        assertThat(total).isEqualTo(75.0);
+    }
+
+    @AfterAll
+    static void tearDown() {
+        database.close();
     }
 }
