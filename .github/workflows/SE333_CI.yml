@@ -1,34 +1,40 @@
-name: SE333_CI
+name: SE333 Continuous Integration
+
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
 
 jobs:
-  SE333_CI_JOB:
+  build-test-analyze:
     runs-on: ubuntu-latest
+
     steps:
-      - name: checkout-repo
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: setupJava
+      - name: Set up JDK 23
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
           distribution: 'temurin'
-          architecture: x64
+          java-version: '23'
+          cache: maven
 
-      - name: Install Linter
-        ##TODO
-
+      # Run Checkstyle (static analysis)
       - name: Run Checkstyle
-        ##TODO
+        run: mvn checkstyle:checkstyle -Dcheckstyle.failOnViolation=false
 
-      - name: Upload Checkstyle Result
-        ##TODO
+      - name: Upload Checkstyle Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkstyle-report
+          path: target/checkstyle-result.xml
 
-      - name: Run Maven Test
-        ##TODO
+      # Run tests + coverage
+      - name: Run Tests with JaCoCo
+        run: mvn clean verify
 
-      - name: Jacoco Report
-        ##TODO
+      - name: Upload JaCoCo Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
