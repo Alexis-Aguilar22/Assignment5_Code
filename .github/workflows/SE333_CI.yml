@@ -2,39 +2,55 @@ name: SE333 Continuous Integration
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  build-test-analyze:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      # Step 1: Checkout your repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 23
+      # Step 2: Set up Java 23 (or use Java 21 if needed)
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '23'
-          cache: maven
 
-      # Run Checkstyle (static analysis)
+      # Step 3: Cache Maven dependencies for faster builds
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # Step 4: Run Checkstyle (static analysis)
       - name: Run Checkstyle
-        run: mvn checkstyle:checkstyle -Dcheckstyle.failOnViolation=false
-
-      - name: Upload Checkstyle Report
+        run: mvn -B clean validate
+      - name: Upload Checkstyle report
         uses: actions/upload-artifact@v4
         with:
           name: checkstyle-report
           path: target/checkstyle-result.xml
 
-      # Run tests + coverage
+      # Step 5: Run tests and collect coverage
       - name: Run Tests with JaCoCo
-        run: mvn clean verify
-
-      - name: Upload JaCoCo Coverage Report
+        run: mvn -B test verify
+      - name: Upload JaCoCo coverage report
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
-          path: target/site/jacoco/
+          path: target/site/jacoco
+
+      # Step 6: Upload test results for inspection
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: target/surefire-reports
