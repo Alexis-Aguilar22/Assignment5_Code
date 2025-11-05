@@ -4,3 +4,4 @@ For this project I used the Amazon and BarnesAndNoble projects to demonstrate co
 static analysis, testing practices, and more.
 
 For part 1, Project Setup and Testing Practice, I # Workflow test trigger
+# workflow refresh
