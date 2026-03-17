@@ -15,7 +15,7 @@ public class Amazon {
     }
 
     public double calculate() {
-        double finalPrice = 0;
+        double finalPrice = 0.0;
 
         for (PriceRule rule : rules) {
             finalPrice += rule.priceToAggregate(carts.getItems());
@@ -24,7 +24,7 @@ public class Amazon {
         return finalPrice;
     }
 
-    public void addToCart(Item item){
+    public void addToCart(Item item) {
         carts.add(item);
     }
 }
