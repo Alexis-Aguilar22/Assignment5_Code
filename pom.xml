@@ -5,66 +5,138 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>Assignment6_Code</artifactId>
+    <artifactId>Assignment5_code</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <junit.version>5.11.4</junit.version>
+        <mockito.version>5.15.2</mockito.version>
+        <assertj.version>3.27.3</assertj.version>
+        <hsqldb.version>2.7.4</hsqldb.version>
+        <playwright.version>1.58.0</playwright.version>
+        <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
+        <jacoco.version>0.8.11</jacoco.version>
     </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.15.2</version>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.11.4</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.27.3</version>
+            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>2.6.0</version>
+            <version>${hsqldb.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>${playwright.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>21</release>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                    <systemPropertyVariables>
+                        <headless>true</headless>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>validate-with-checkstyle</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>checkstyle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <configLocation>sun_checks.xml</configLocation>
+                    <consoleOutput>true</consoleOutput>
+                    <failOnViolation>false</failOnViolation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <outputFile>${project.build.directory}/checkstyle.xml</outputFile>
+                    <outputFileFormat>xml</outputFileFormat>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.10</version>
+                <version>${jacoco.version}</version>
                 <executions>
                     <execution>
-                        <id>default-prepare-agent</id>
+                        <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                     <execution>
                         <id>jacoco-report</id>
-                        <phase>test</phase>
+                        <phase>verify</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
             </plugin>
         </plugins>
     </build>
